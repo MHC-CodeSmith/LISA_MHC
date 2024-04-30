@@ -1,0 +1,20 @@
+bash: /usr/share/colcon_argcomplete/hook/colcon_argcomplete.bash: No such file or directory
+lisa@mhc-LENOVO-GAMING-3-15ACH6:~$ rosrun rosserial_python serial_node.py _port:=/dev/ttyUSB0 _baud:=9600
+[INFO] [1714516513.123567]: ROS Serial Python Node
+[INFO] [1714516513.127654]: Connecting to /dev/ttyUSB0 at 9600 baud
+[INFO] [1714516515.260690]: Requesting topics...
+[ERROR] [1714516515.639654]: Mismatched protocol version in packet (b'^'): lost sync or rosserial_python is from different ros release than the rosserial client
+[INFO] [1714516515.641332]: Protocol version of client is unrecognized, expected Rev 1 (rosserial 0.5+)
+[ERROR] [1714516516.262768]: Mismatched protocol version in packet (b'\xf7'): lost sync or rosserial_python is from different ros release than the rosserial client
+[INFO] [1714516516.264452]: Protocol version of client is unrecognized, expected Rev 1 (rosserial 0.5+)
+[ERROR] [1714516516.679986]: Mismatched protocol version in packet (b'\xcf'): lost sync or rosserial_python is from different ros release than the rosserial client
+[INFO] [1714516516.681760]: Protocol version of client is unrecognized, expected Rev 1 (rosserial 0.5+)
+[ERROR] [1714516519.455403]: Mismatched protocol version in packet (b'\xca'): lost sync or rosserial_python is from different ros release than the rosserial client
+[INFO] [1714516519.456836]: Protocol version of client is unrecognized, expected Rev 1 (rosserial 0.5+)
+[ERROR] [1714516520.025296]: Mismatched protocol version in packet (b'N'): lost sync or rosserial_python is from different ros release than the rosserial client
+[INFO] [1714516520.026901]: Protocol version of client is unrecognized, expected Rev 1 (rosserial 0.5+)
+[ERROR] [1714516521.780450]: Mismatched protocol version in packet (b'\xdf'): lost sync or rosserial_python is from different ros release than the rosserial client
+[INFO] [1714516521.782005]: Protocol version of client is unrecognized, expected Rev 1 (rosserial 0.5+)
+^C[INFO] [1714516522.033998]: Sending tx stop request
+[INFO] [1714516522.035120]: shutdown hook activated
+lisa@mhc-LENOVO-GAMING-3-15ACH6:~$ 
