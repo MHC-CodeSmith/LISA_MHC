@@ -41,7 +41,7 @@ def callback(data):
 
 def publish_faces():
     global pub
-    pub = rospy.Publisher('/Faces', Image, queue_size=10)
+    pub = rospy.Publisher('/Rostos', Image, queue_size=10)
     rospy.init_node('encontrar_rostos_pub_py', anonymous=True)
     rospy.Subscriber('/Imagens', Image, callback)
     rospy.spin()
