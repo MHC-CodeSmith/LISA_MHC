@@ -13,14 +13,13 @@ import cv2 # OpenCV library
   
 def publish_message():
  
-  # Node is publishing to the video_frames topic using 
+  # Node is publishing to the /Imagens topic using 
   # the message type Image
-  pub = rospy.Publisher('video_frames', Image, queue_size=10)
+  pub = rospy.Publisher('/Imagens', Image, queue_size=10)
      
   # Tells rospy the name of the node.
-  # Anonymous = True makes sure the node has a unique name. Random
-  # numbers are added to the end of the name.
-  rospy.init_node('video_pub_py', anonymous=True)
+  # Node name is set to Receber_Imagem
+  rospy.init_node('Receber_Imagem', anonymous=False)
      
   # Go through the loop 10 times per second
   rate = rospy.Rate(10) # 10hz
@@ -42,7 +41,7 @@ def publish_message():
          
       if ret == True:
         # Print debugging information to the terminal
-        rospy.loginfo('publishing video frame')
+        rospy.loginfo('Publicando video frame')
              
         # Publish the image.
         # The 'cv2_to_imgmsg' method converts an OpenCV
