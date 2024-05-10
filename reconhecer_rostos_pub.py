@@ -10,21 +10,29 @@ import rospy
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import cv2
+import mediapipe as mp
+
+# Initialize MediaPipe Face Detection
+mp_face_detection = mp.solutions.face_detection
+face_detection = mp_face_detection.FaceDetection(model_selection=0, min_detection_confidence=0.5)
 
 def find_face(frame):
-    # Load the cascade for face detection
-    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-     
-    # Convert frame to grayscale
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-     
-    # Detect faces
-    faces = face_cascade.detectMultiScale(gray, 1.1, 4)
-     
-    # If at least one face is detected, return the first face's region of interest
-    for (x, y, w, h) in faces:
-        return frame[y:y+h, x:x+w]
-
+    # Convert frame to RGB
+    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    
+    # Process the image and detect faces
+    results = face_detection.process(rgb_frame)
+    
+    if results.detections:
+        for detection in results.detections:
+            # Get the bounding box of the first detected face
+            bboxC = detection.location_data.relative_bounding_box
+            ih, iw, _ = frame.shape
+            bbox = int(bboxC.xmin * iw), int(bboxC.ymin * ih), \
+                   int(bboxC.width * iw), int(bboxC.height * ih)
+            # Return the face region
+            return frame[bbox[1]:bbox[1]+bbox[3], bbox[0]:bbox[0]+bbox[2]]
+    
     # Return the original frame if no faces are detected
     return frame
 
@@ -36,7 +44,7 @@ def callback(data):
     
     if face_frame is not None:
         # Convert the face frame back to a ROS Image message
-        face_msg = br.cv2_to_imgmsg(face_frame)
+        face_msg = br.cv2_to_imgmsg(face_frame, encoding="bgr8")
         pub.publish(face_msg)
 
 def publish_faces():
