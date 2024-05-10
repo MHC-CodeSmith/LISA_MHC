@@ -32,7 +32,7 @@ def receive_message():
  
   # Tells rospy the name of the node.
   # Node name is set to Receber_Imagem
-  rospy.init_node('Receber_Imagem', anonymous=False)
+  rospy.init_node('Mostrar_Imagem', anonymous=False)
    
   # Node is subscribing to the /Imagens topic
   rospy.Subscriber('/Imagens', Image, callback)
