@@ -30,7 +30,7 @@ def find_face(frame):
 
 def callback(data):
     br = CvBridge()
-    rospy.loginfo('Processing video frame')
+    rospy.loginfo('Encontrando Rostos')
     current_frame = br.imgmsg_to_cv2(data)
     face_frame = find_face(current_frame)
     
@@ -41,9 +41,9 @@ def callback(data):
 
 def publish_faces():
     global pub
-    pub = rospy.Publisher('/Face', Image, queue_size=10)
-    rospy.init_node('find_faces_pub_py', anonymous=True)
-    rospy.Subscriber('video_frames', Image, callback)
+    pub = rospy.Publisher('/Faces', Image, queue_size=10)
+    rospy.init_node('encontrar_rostos_pub_py', anonymous=True)
+    rospy.Subscriber('/Imagens', Image, callback)
     rospy.spin()
 
 if __name__ == '__main__':
