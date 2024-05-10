@@ -18,7 +18,7 @@ def callback(data):
   br = CvBridge()
  
   # Output debugging information to the terminal
-  rospy.loginfo("receiving video frame")
+  rospy.loginfo("Recebendo video frame")
    
   # Convert ROS Image message to OpenCV image
   current_frame = br.imgmsg_to_cv2(data)
@@ -31,12 +31,11 @@ def callback(data):
 def receive_message():
  
   # Tells rospy the name of the node.
-  # Anonymous = True makes sure the node has a unique name. Random
-  # numbers are added to the end of the name. 
-  rospy.init_node('video_sub_py', anonymous=True)
+  # Node name is set to Receber_Imagem
+  rospy.init_node('Receber_Imagem', anonymous=False)
    
-  # Node is subscribing to the video_frames topic
-  rospy.Subscriber('video_frames', Image, callback)
+  # Node is subscribing to the /Imagens topic
+  rospy.Subscriber('/Imagens', Image, callback)
  
   # spin() simply keeps python from exiting until this node is stopped
   rospy.spin()
