@@ -37,9 +37,9 @@ def image_callback(msg):
 
 def gesture_recognition():
     rospy.init_node('reconhecimento_gesto_nodo', anonymous=True)
-    rospy.Subscriber('/imagens', Image, image_callback)
+    rospy.Subscriber('/Imagens', Image, image_callback)
     global gesture_pub
-    gesture_pub = rospy.Publisher('/gestos', Int32, queue_size=10)
+    gesture_pub = rospy.Publisher('/Gestos', Int32, queue_size=10)
     rospy.spin()
 
 if _name_ == '_main_':
