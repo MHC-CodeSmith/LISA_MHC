@@ -18,7 +18,7 @@ def callback(data):
     br = CvBridge()
  
     # Output debugging information to the terminal
-    rospy.loginfo("Receiving face frame")
+    rospy.loginfo("Recebendo Rosto frame")
    
     # Convert ROS Image message to OpenCV image
     current_frame = br.imgmsg_to_cv2(data)
