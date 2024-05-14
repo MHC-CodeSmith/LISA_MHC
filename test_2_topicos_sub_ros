@@ -1,0 +1,40 @@
+#!/usr/bin/python3
+import rospy
+from std_msgs.msg import String
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge
+
+# Variáveis globais para armazenar o estado dos tópicos
+image_data = None
+bridge = CvBridge()
+
+def callback_a(data):
+    global image_data
+    # Verifica se a condição é satisfeita e se há dados de imagem disponíveis
+    if data.data == "condição específica" and image_data is not None:
+        rospy.loginfo("Condição específica atendida e dados de imagem recebidos.")
+        # Aqui, você pode processar a imagem ou fazer qualquer ação desejada.
+        cv_image = bridge.imgmsg_to_cv2(image_data, "bgr8")
+        # Processar cv_image como desejado
+        # Exemplo: mostrar a imagem
+        import cv2
+        cv2.imshow("Received Image", cv_image)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
+def callback_b(data):
+    global image_data
+    # Armazena os dados da imagem recebida
+    image_data = data
+    rospy.loginfo("Dados de imagem recebidos.")
+
+def listener():
+    rospy.init_node('double_topic_listener', anonymous=True)
+    
+    rospy.Subscriber("/topic_a", String, callback_a)
+    rospy.Subscriber("/topic_b", Image, callback_b)
+    
+    rospy.spin()
+
+if __name__ == '__main__':
+    listener()
