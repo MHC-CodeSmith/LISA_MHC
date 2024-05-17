@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 #!/usr/bin/python3
 # Description:
 # - Subscribes to real-time streaming video from your built-in webcam.
