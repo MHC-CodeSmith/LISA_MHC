@@ -16,8 +16,10 @@ import serial
 import time
 
 
+
 def callback(data):
- 
+  #só até 4 contador
+  #1: parar 2: horario 3: antihorario
   # Used to convert between ROS and OpenCV images
   br = CvBridge()
  
@@ -39,7 +41,7 @@ def receive_message():
   rospy.init_node('Node_Serial', anonymous=False)
    
   # Node is subscribing to the /Imagens topic
-  rospy.Subscriber('/Resultados', Image, callback)
+  rospy.Subscriber('finger_count', Image, callback)
  
   # spin() simply keeps python from exiting until this node is stopped
   rospy.spin()
