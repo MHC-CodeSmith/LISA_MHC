@@ -9,7 +9,6 @@
 # Import the necessary libraries
 import rospy # Python library for ROS
 from sensor_msgs.msg import 
-import cv2 # OpenCV library
 import serial
 import time
 
@@ -19,18 +18,12 @@ def callback(data):
   #só até 4 contador
   #1: parar 2: horario 3: antihorario
   # Used to convert between ROS and OpenCV images
-  br = CvBridge()
  
   # Output debugging information to the terminal
-  rospy.loginfo("Recebendo video frame")
+  rospy.loginfo("Recebendo contagem de dedos")
    
-  # Convert ROS Image message to OpenCV image
-  current_frame = br.imgmsg_to_cv2(data)
+  contador = int(data)
    
-  # Display image
-  cv2.imshow("camera", current_frame)
-   
-  cv2.waitKey(1)
       
 def receive_message():
  
