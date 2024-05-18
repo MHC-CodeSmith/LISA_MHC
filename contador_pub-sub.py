@@ -1,89 +1,83 @@
 #!/usr/bin/python3
-import rospy
-import os
-from std_msgs.msg import Int32
 import cv2
 import mediapipe as mp
-from threading import Thread, Lock
+import rospy
+from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
-from cv_bridge import CvBridge, CvBridgeError
+from std_msgs.msg import Int32
 
-os.environ['DISPLAY'] = ':0.0'
-
-# Inicializar o Mediapipe Hands
-mp_hands = mp.solutions.hands
-hands = mp_hands.Hands(max_num_hands=1, min_detection_confidence=0.7, min_tracking_confidence=0.7)
 mp_drawing = mp.solutions.drawing_utils
+mp_drawing_styles = mp.solutions.drawing_styles
+mp_hands = mp.solutions.hands
 
-def find_hands_and_fingers(img, draw=True):
-    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    results = hands.process(img_rgb)
-    hand_info = []
+class HandFingerCounter:
+    def _init_(self):
+        self.bridge = CvBridge()
+        self.image_sub = rospy.Subscriber('/Imagens', Image, self.image_callback)
+        self.finger_count_pub = rospy.Publisher('/Contador', Int32, queue_size=10)
+        self.hands = mp_hands.Hands(
+            model_complexity=0,
+            min_detection_confidence=0.5,
+            min_tracking_confidence=0.5
+        )
 
-    if results.multi_hand_landmarks:
-        for hand_landmarks, handedness in zip(results.multi_hand_landmarks, results.multi_handedness):
-            # Dedos abertos são identificados pela posição y das landmarks
-            finger_tips = [4, 8, 12, 16, 20]
-            fingers = []
+    def image_callback(self, msg):
+        try:
+            # Convert ROS Image message to OpenCV image
+            image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
 
-            # Verifica se o polegar está levantado
-            if hand_landmarks.landmark[finger_tips[0]].x < hand_landmarks.landmark[finger_tips[0] - 2].x:
-                fingers.append(True)
-            else:
-                fingers.append(False)
+            # To improve performance, optionally mark the image as not writeable to pass by reference.
+            image.flags.writeable = False
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            results = self.hands.process(image)
 
-            # Verifica os outros dedos (índice, médio, anelar e mínimo)
-            for tip in finger_tips[1:]:
-                if hand_landmarks.landmark[tip].y < hand_landmarks.landmark[tip - 2].y:
-                    fingers.append(True)
-                else:
-                    fingers.append(False)
+            # Draw the hand annotations on the image.
+            image.flags.writeable = True
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
-            hand_type = handedness.classification[0].label
-            hand_info.append((hand_type, fingers))
-            if draw:
-                mp_drawing.draw_landmarks(img, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+            # Initially set finger count to 0 for each cap
+            fingerCount = 0
 
-    return img, hand_info
+            if results.multi_hand_landmarks:
+                for hand_landmarks in results.multi_hand_landmarks:
+                    # Set variable to keep landmarks positions (x and y)
+                    handLandmarks = []
 
-def publisher(finger_count):
-    pub = rospy.Publisher('finger_count', Int32, queue_size=10)
-    rate = rospy.Rate(10)  # 10 Hz
-    while not rospy.is_shutdown():
-        with finger_count_lock:
-            count = finger_count[0]
-        rospy.loginfo("Publishing: %d", count)
-        pub.publish(count)
-        rate.sleep()
+                    # Fill list with x and y positions of each landmark
+                    for landmarks in hand_landmarks.landmark:
+                        handLandmarks.append([landmarks.x, landmarks.y])
 
-def image_callback(msg):
-    br = CvBridge()
-    try:
-        # Usando 'passthrough' para evitar problemas de codificação
-        cv_image = br.imgmsg_to_cv2(msg, desired_encoding='passthrough')
-    except CvBridgeError as e:
-        rospy.logerr("Failed to convert image: %s", e)
-        return
+                    # Check fingers: TIP y position must be lower than PIP y position
+                    if handLandmarks[8][1] < handLandmarks[6][1]:       # Index finger
+                        fingerCount += 1
+                    if handLandmarks[12][1] < handLandmarks[10][1]:     # Middle finger
+                        fingerCount += 1
+                    if handLandmarks[16][1] < handLandmarks[14][1]:     # Ring finger
+                        fingerCount += 1
+                    if handLandmarks[20][1] < handLandmarks[18][1]:     # Pinky
+                        fingerCount += 1
 
-    cv_image = cv2.flip(cv_image, 1)
-    _, hands_info = find_hands_and_fingers(cv_image)
-    with finger_count_lock:
-        # Somar a quantidade de dedos verdadeiros (abertos)
-        finger_count[0] = sum(finger.count(True) for _, finger in hands_info)
-    
-    rospy.loginfo(f"Detected fingers: {finger_count[0]}")
+                    # Draw hand landmarks
+                    mp_drawing.draw_landmarks(
+                        image,
+                        hand_landmarks,
+                        mp_hands.HAND_CONNECTIONS,
+                        mp_drawing_styles.get_default_hand_landmarks_style(),
+                        mp_drawing_styles.get_default_hand_connections_style())
 
-if _name_ == '_main_': 
-    rospy.init_node('finger_publisher', anonymous=True)
-    finger_count = [0]
-    finger_count_lock = Lock()
-    thread_publisher = Thread(target=publisher, args=(finger_count,))
-    thread_publisher.start()
-    image_subscriber = rospy.Subscriber('/Imagens', Image, image_callback)
-    
+            # Publish the finger count
+            self.finger_count_pub.publish(fingerCount)
+            
+        except Exception as e:
+            rospy.logerr("Error processing image: %s", str(e))
+
+def main():
+    rospy.init_node('hand_finger_counter', anonymous=True)
+    HandFingerCounter()
     try:
         rospy.spin()
     except KeyboardInterrupt:
-        pass
-    finally:
-        cv2.destroyAllWindows()
+        rospy.loginfo("Shutting down")
+
+if _name_ == '_main_':
+    main()
