@@ -1,11 +1,5 @@
 #!/usr/bin/python3
-# Basics ROS program to subscribe to real-time streaming video frames,
-# detect faces, and publish them to the /Face topic.
-# Author:
-# - Addison Sears-Collins
-# - https://automaticaddison.com
 
-# Import the necessary libraries
 import rospy
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
@@ -25,16 +19,27 @@ def find_face(frame):
     results = face_detection.process(rgb_frame)
     
     if results.detections:
+        # Encontrar o rosto mais próximo (com a maior área da caixa delimitadora)
+        max_area = 0
+        closest_face = None
+        closest_bbox = None
+        
         for detection in results.detections:
-            # Get the bounding box of the first detected face
             bboxC = detection.location_data.relative_bounding_box
             ih, iw, _ = frame.shape
             bbox = (int(bboxC.xmin * iw), int(bboxC.ymin * ih),
                     int(bboxC.width * iw), int(bboxC.height * ih))
-            # Return the face region and the bbox
-            return frame[bbox[1]:bbox[1]+bbox[3], bbox[0]:bbox[0]+bbox[2]], bbox
+            
+            area = bbox[2] * bbox[3]
+            if area > max_area:
+                max_area = area
+                closest_face = frame[bbox[1]:bbox[1]+bbox[3], bbox[0]:bbox[0]+bbox[2]]
+                closest_bbox = bbox
+        
+        # Retornar a região do rosto mais próximo e sua caixa delimitadora
+        return closest_face, closest_bbox
     
-    # Return the original frame and None if no faces are detected
+    # Retornar o quadro original e None se nenhum rosto for detectado
     return frame, None
 
 def callback(data):
@@ -63,7 +68,7 @@ def publish_faces():
     rospy.Subscriber('/Imagens', Image, callback)
     rospy.spin()
 
-if __name__ == '__main__':
+if _name_ == '_main_':
     try:
         publish_faces()
     except rospy.ROSInterruptException:
