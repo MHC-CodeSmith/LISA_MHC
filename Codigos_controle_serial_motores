@@ -1,107 +1,71 @@
+RASP:
+
+#!/usr/bin/env python3
+import serial
+import time
+
+# Substitua '/dev/ttyUSB0' pelo dispositivo correto se for diferente
+ser = serial.Serial('/dev/ttyUSB0', 115200)  # Abre a porta serial com 115200 baud
+
+try:
+    while True:
+        user_command = input("Controle do motor (HORARIO, ANTIHORARIO, PARAR): \n")
+        ser.write(user_command.encode('utf-8') + b'\n')  # Adiciona nova linha e codifica para bytes
+        time.sleep(1)  # Espera um segundo antes de enviar a próxima mensagem
+except KeyboardInterrupt:
+    ser.close()  # Fecha a porta serial ao sair do programa
+
+
+ESP:
 #include <Arduino.h>
 #include <AccelStepper.h>
 
 // Definições de pinos para o motor
-#define STEP_PIN1 14
-#define DIR_PIN1 12
-
-#define IN21 5
-#define IN22 18
-#define IN23 19
-#define IN24 21
-
-//para esse motor, a ordem dos fios no driver fica cruzado (os dois do meio) ao definir os INX2 e INX3
-#define IN31 26
-#define IN32 33
-#define IN33 25
-#define IN34 32
-
-#define IN41 23
-#define IN42 22
-#define IN43 4
-#define IN44 2
-
-//#define IN51 13
-//#define IN52 15
-//#define IN53 34
-//#define IN54 35
-
+#define STEP_PIN 14
+#define DIR_PIN 12
 #define LED_BUILTIN 2
 
 // Criação do objeto stepper
-
-AccelStepper stepper1(1, STEP_PIN1, DIR_PIN1);
-AccelStepper stepper2(AccelStepper::FULL4WIRE, IN21, IN22, IN23, IN24);
-AccelStepper stepper3(8, IN31, IN32, IN33, IN34);
-AccelStepper stepper4(8, IN41, IN43, IN42, IN44);
-//AccelStepper stepper5(AccelStepper::FULL4WIRE, IN51, IN52, IN53, IN54);
+AccelStepper stepper(1, STEP_PIN, DIR_PIN);
 
 void setup() {
   // Inicia a comunicação serial com 115200 baud rate.
   Serial.begin(115200);
-  
+
   // Configura o pino do LED como saída
   pinMode(LED_BUILTIN, OUTPUT);
-  
+
   // Configurações iniciais do motor
-  stepper1.setMaxSpeed(1000);
-  stepper1.setAcceleration(500);
-  stepper1.moveTo(0);
-
-  stepper2.setMaxSpeed(1000);
-  stepper2.setAcceleration(500);
-  stepper2.moveTo(0);
-
-  stepper3.setMaxSpeed(1000);
-  stepper3.setAcceleration(500);
-  stepper3.moveTo(0);
-
-  stepper4.setMaxSpeed(1000);
-  stepper4.setAcceleration(500);
-  stepper4.moveTo(0);
-
- // stepper5.setMaxSpeed(1000);
- // stepper5.setAcceleration(500);
- // stepper5.moveTo(0);
-
-  // 500 passos por segundo
-  stepper1.setSpeed(500); 
-  stepper2.setSpeed(500);
-  stepper3.setSpeed(1000);
-  stepper4.setSpeed(1000);
-  //stepper5.setSpeed(500);
+  stepper.setMaxSpeed(1000);
+  stepper.setAcceleration(500);
 }
 
 void loop() {
-  // Movimenta o motor a uma velocidade constante
-  stepper1.runSpeed();
-  stepper2.runSpeed();
-  stepper3.runSpeed();
-  stepper4.runSpeed();
- // stepper5.runSpeed();
+  // Verifica se há dados disponíveis para ler na porta serial.
+  if (Serial.available() > 0) {
+    // Lê a linha de dados recebida até encontrar um caractere de nova linha ('\n').
+    String received = Serial.readStringUntil('\n');
 
-  static unsigned long lastMillis = 0;
-  if (millis() - lastMillis > 5000) {
-    stepper1.setSpeed(-stepper1.speed()); // Inverte a direção
-    stepper2.setSpeed(-stepper2.speed());
-    stepper3.setSpeed(-stepper3.speed());
-    stepper4.setSpeed(-stepper4.speed());
-   // stepper5.setSpeed(-stepper5.speed());
-    lastMillis = millis();
-  }
-  /*
-  Serial.println("comecando...");
+    // Imprime os dados recebidos no console serial para depuração.
+    Serial.print("Received: ");
+    Serial.println(received);
 
-  stepper1.setSpeed(500); 
-  stepper1.runSpeed();
-  static unsigned long lastMillis = 0;
-  while(millis() - lastMillis > 2000) {
-    lastMillis = millis();
-    Serial.println(millis() - lastMillis);
+    // Verifica os comandos recebidos
+    if (received == "HORARIO") {
+      stepper.setSpeed(500);  // Define a velocidade do motor para 500 passos por segundo
+      digitalWrite(LED_BUILTIN, HIGH);  // Acende o LED
+    } else if (received == "ANTIHORARIO") {
+      stepper.setSpeed(-500);  // Define a velocidade do motor para -500 passos por segundo
+      digitalWrite(LED_BUILTIN, HIGH);  // Acende o LED
+    } else if (received == "PARAR") {
+      stepper.setSpeed(0);  // Para o motor
+      digitalWrite(LED_BUILTIN, LOW);  // Apaga o LED
+    } else {
+      stepper.setSpeed(0);  // Para o motor em qualquer comando não reconhecido
+      digitalWrite(LED_BUILTIN, LOW);  // Apaga o LED
+    }
   }
-  lastMillis = 0;
-  stepper1.setSpeed(0);
-  while(millis() - lastMillis < 2000) {
-    lastMillis = millis();
-  }*/
+
+  // Executa um passo do motor de acordo com a velocidade definida
+  stepper.runSpeed();
 }
