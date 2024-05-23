@@ -124,7 +124,7 @@ source devel/setup.bash
 echo "Configuração concluída com sucesso."
 ```
 
-### Passo 2: Salvar o Script: Salve o script acima em um arquivo chamado setup_workspace.sh.
+### Passo 2: Salvar o Script: Salve o script acima em um arquivo chamado setup_workspace.sh. (crtl-V dentro do nano e depois crtl-O Enter e ctrl-X)
 ```bash
 touch setup_workspace.sh && nano setup_workspace.sh
 ```
