@@ -66,6 +66,7 @@ class HandFingerCounter:
                         mp_drawing_styles.get_default_hand_connections_style())
 
             # Publish the finger count
+            rospy.loginfo(f"Contador: {fingerCount}")
             self.finger_count_pub.publish(fingerCount)
             
         except Exception as e:
@@ -79,5 +80,5 @@ def main():
     except KeyboardInterrupt:
         rospy.loginfo("Shutting down")
 
-if __name__ == '_main_':
+if _name_ == '_main_':
     main()
