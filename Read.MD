@@ -16,7 +16,7 @@ Incluímos um fluxograma detalhado para ilustrar como os componentes interagem d
 
 ## Como Usar
 
-### Passo 1: Copiar o Código (crtl-V)
+### Passo 1: Copiar o Código (crtl-C)
 
 ```bash
 #!/bin/bash
