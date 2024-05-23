@@ -96,9 +96,6 @@ include_directories(
   \${catkin_INCLUDE_DIRS}
 )
 
-add_executable(example_node src/example_node.cpp)
-target_link_libraries(example_node \${catkin_LIBRARIES})
-
 install(PROGRAMS
     scripts/cam_pub.py
     scripts/cam_sub.py
