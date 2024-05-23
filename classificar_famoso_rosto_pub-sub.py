@@ -1,84 +1,86 @@
-#!/usr/bin/python3
-import cv2
-import mediapipe as mp
+#!/usr/bin/env python3
+
 import rospy
-from cv_bridge import CvBridge
+import cv2
+import face_recognition as fr
+import os
+import glob
+from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
-from std_msgs.msg import Int32
+from std_msgs.msg import String
+from webcam.msg import FaceWithCoords
+import time
 
-mp_drawing = mp.solutions.drawing_utils
-mp_drawing_styles = mp.solutions.drawing_styles
-mp_hands = mp.solutions.hands
-
-class HandFingerCounter:
+class FaceRecognitionNode:
     def _init_(self):
         self.bridge = CvBridge()
-        self.image_sub = rospy.Subscriber('/Imagens', Image, self.image_callback)
-        self.finger_count_pub = rospy.Publisher('/Contador', Int32, queue_size=10)
-        self.hands = mp_hands.Hands(
-            model_complexity=0,
-            min_detection_confidence=0.5,
-            min_tracking_confidence=0.5
-        )
+        self.imagem_original = None
+        self.pasta_imagens = '/home/murilo/lisa/lisa_desktop/Imagens'
+        self.famoso = None
+        self.encoded_images = self.preload_images()
+        self.last_detection_time = 0
+        self.detection_interval = 5  # segundos
+        self.best_match = None
+        self.best_distance = float('inf')
+        
+        self.image_sub = rospy.Subscriber('/Rostos', FaceWithCoords, self.image_callback)
+        self.famoso_pub = rospy.Publisher('/imagem_famosa', String, queue_size=10)
+
+    def preload_images(self):
+        imagens = glob.glob(os.path.join(self.pasta_imagens, '.jpg')) + glob.glob(os.path.join(self.pasta_imagens, '.png'))
+        encoded_images = []
+        for caminho in imagens:
+            imagem2 = fr.load_image_file(caminho)
+            imagem2 = cv2.cvtColor(imagem2, cv2.COLOR_BGR2RGB)
+            face_encodings = fr.face_encodings(imagem2)
+            
+            if face_encodings:  # Verifica se há pelo menos um rosto na imagem
+                encoded_images.append((caminho, face_encodings[0]))
+        return encoded_images
 
     def image_callback(self, msg):
         try:
-            # Convert ROS Image message to OpenCV image
-            image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
-
-            # To improve performance, optionally mark the image as not writeable to pass by reference.
-            image.flags.writeable = False
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            results = self.hands.process(image)
-
-            # Draw the hand annotations on the image.
-            image.flags.writeable = True
-            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-
-            # Initially set finger count to 0 for each cap
-            fingerCount = 0
-
-            if results.multi_hand_landmarks:
-                for hand_landmarks in results.multi_hand_landmarks:
-                    # Set variable to keep landmarks positions (x and y)
-                    handLandmarks = []
-
-                    # Fill list with x and y positions of each landmark
-                    for landmarks in hand_landmarks.landmark:
-                        handLandmarks.append([landmarks.x, landmarks.y])
-
-                    # Check fingers: TIP y position must be lower than PIP y position
-                    if handLandmarks[8][1] < handLandmarks[6][1]:       # Index finger
-                        fingerCount += 1
-                    if handLandmarks[12][1] < handLandmarks[10][1]:     # Middle finger
-                        fingerCount += 1
-                    if handLandmarks[16][1] < handLandmarks[14][1]:     # Ring finger
-                        fingerCount += 1
-                    if handLandmarks[20][1] < handLandmarks[18][1]:     # Pinky
-                        fingerCount += 1
-
-                    # Draw hand landmarks
-                    mp_drawing.draw_landmarks(
-                        image,
-                        hand_landmarks,
-                        mp_hands.HAND_CONNECTIONS,
-                        mp_drawing_styles.get_default_hand_landmarks_style(),
-                        mp_drawing_styles.get_default_hand_connections_style())
-
-            # Publish the finger count
-            rospy.loginfo(f"Contador: {fingerCount}")
-            self.finger_count_pub.publish(fingerCount)
+            current_time = time.time()
+            if current_time - self.last_detection_time < self.detection_interval:
+                return
             
-        except Exception as e:
-            rospy.logerr("Error processing image: %s", str(e))
+            frame = self.bridge.imgmsg_to_cv2(msg.face_image, 'bgr8')
+            if frame is None or frame.size == 0:
+                rospy.logwarn("Imagem recebida está vazia")
+                return
 
-def main():
-    rospy.init_node('hand_finger_counter', anonymous=True)
-    HandFingerCounter()
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            face_encodings = fr.face_encodings(frame)
+            if face_encodings:
+                self.imagem_original = face_encodings[0]
+                self.compare_images()
+                self.last_detection_time = current_time
+            else:
+                rospy.loginfo("Nenhum rosto detectado na imagem recebida.")
+        except CvBridgeError as e:
+            rospy.logerr("CvBridge Error: {0}".format(e))
+        except Exception as e:
+            rospy.logerr("Erro ao processar a imagem: {0}".format(e))
+
+    def compare_images(self):
+        if self.imagem_original is None:
+            return
+
+        for caminho, encoding in self.encoded_images:
+            distancia = fr.face_distance([self.imagem_original], encoding)[0]
+
+            if distancia < self.best_distance:
+                self.best_match = caminho
+                self.best_distance = distancia
+
+        if self.best_match:
+            self.famoso_pub.publish(String(self.best_match))
+            rospy.loginfo(f"Imagem mais próxima: {self.best_match}, Distância: {self.best_distance}")
+
+if _name_ == '_main_':
+    rospy.init_node('face_recognition_node', anonymous=True)
+    node = FaceRecognitionNode()
     try:
         rospy.spin()
     except KeyboardInterrupt:
-        rospy.loginfo("Shutting down")
-
-if _name_ == '_main_':
-    main()
+        rospy.loginfo("Shutting down face recognition node")
