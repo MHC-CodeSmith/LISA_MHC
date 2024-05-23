@@ -42,7 +42,7 @@ def gesture_recognition():
     gesture_pub = rospy.Publisher('/Gestos', Int32, queue_size=10)
     rospy.spin()
 
-if _name_ == '_main_':
+if __name__ == '_main_':
     try:
         gesture_recognition()
     except rospy.ROSInterruptException:
