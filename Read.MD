@@ -73,9 +73,10 @@ cd ~/lisa_ws/src/estrutura
 mkdir -p src include scripts
 
 cd ~/lisa_ws/src/estrutura/scripts
-git clone --depth 1 git@github.com:MHC-CodeSmith/LISA_MHC.git .
+git clone --depth 1 https://github.com/MHC-CodeSmith/LISA_MHC.git .
 rm -rf .git
 chmod +x *.py
+
 
 # Atualizar CMakeLists.txt
 echo "Atualizando CMakeLists.txt..."
