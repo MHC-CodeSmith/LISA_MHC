@@ -15,9 +15,10 @@ Esses componentes são essenciais para o funcionamento autônomo e a interativid
 Incluímos um fluxograma detalhado para ilustrar como os componentes interagem dentro da rede ROS. Para visualizar este fluxograma, navegue até a pasta de imagens neste repositório e abra o arquivo `fluxograma.png`.
 
 ## Como Usar
-Para utilizar o código nesta branch, siga os passos abaixo:
-1. **Copie o codigo:**
-    //bash
+
+### Passo 1: Copiar o Código do Script
+
+```bash
 #!/bin/bash
 
 # Função para verificar se um comando existe
@@ -120,9 +121,3 @@ catkin_make
 
 source devel/setup.bash
 echo "Configuração concluída com sucesso."
-
-2. **Salvar o Script: Salve o script acima em um arquivo chamado setup_workspace.sh.**
-chmod +x setup_workspace.sh
-3. **Executar o Script: Execute o script.**
-./setup_workspace.sh
-
