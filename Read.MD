@@ -16,7 +16,7 @@ Incluímos um fluxograma detalhado para ilustrar como os componentes interagem d
 
 ## Como Usar
 
-### Passo 1: Copiar o Código do Script
+### Passo 1: Copiar o Código
 
 ```bash
 #!/bin/bash
@@ -121,14 +121,7 @@ catkin_make
 
 source devel/setup.bash
 echo "Configuração concluída com sucesso."
-```bash
-### Passo 2: Salvar o Script: Salve o script acima em um arquivo chamado setup_workspace.sh.
-## Passo 3: Tornar o Script Executável: Torne o script executável.
-```bash
-chmod +x setup_workspace.sh
-## Passo 4: Executar o Script: Execute o script.
-```bash
 
-./setup_workspace.sh
+
 
 
