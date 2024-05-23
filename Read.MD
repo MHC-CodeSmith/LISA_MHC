@@ -17,6 +17,7 @@ Incluímos um fluxograma detalhado para ilustrar como os componentes interagem d
 ## Como Usar
 Para utilizar o código nesta branch, siga os passos abaixo:
 1. **Copie o codigo:**
+    //bash
 #!/bin/bash
 
 # Função para verificar se um comando existe
