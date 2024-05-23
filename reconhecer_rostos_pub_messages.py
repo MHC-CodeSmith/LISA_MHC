@@ -68,7 +68,7 @@ def publish_faces():
     rospy.Subscriber('/Imagens', Image, callback)
     rospy.spin()
 
-if _name_ == '_main_':
+if __name__ == '_main_':
     try:
         publish_faces()
     except rospy.ROSInterruptException:
