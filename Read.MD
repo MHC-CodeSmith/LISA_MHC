@@ -121,7 +121,7 @@ catkin_make
 
 source devel/setup.bash
 echo "Configuração concluída com sucesso."
-
+```bash
 ### Passo 2: Salvar o Script: Salve o script acima em um arquivo chamado setup_workspace.sh.
 ## Passo 3: Tornar o Script Executável: Torne o script executável.
 ```bash
