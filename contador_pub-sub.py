@@ -79,5 +79,5 @@ def main():
     except KeyboardInterrupt:
         rospy.loginfo("Shutting down")
 
-if _name_ == '_main_':
+if __name__ == '_main_':
     main()
