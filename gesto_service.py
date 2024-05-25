@@ -3,13 +3,12 @@
 import rospy
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
+from std_srvs.srv import Trigger, TriggerResponse
 import cv2
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
-from estrutura.srv import RecognizeGesture, RecognizeGestureResponse
 
-# Configurações do modelo
 model_path = '/home/mhc/SEMEAR/lisa/lisa_ws/src/estrutura/gesture_recognizer.task'
 base_options = python.BaseOptions(model_asset_path=model_path)
 options = vision.GestureRecognizerOptions(base_options=base_options)
@@ -26,21 +25,25 @@ gesture_mapping = {
 }
 
 class GestureRecognizer:
-    def __init__(self, interval=0.7):
+    def __init__(self):
         self.image = None
-        self.processing = False
         self.latest_gesture = 0
         rospy.Subscriber('/Imagens', Image, self.image_callback)
-        self.service = rospy.Service('recognize_gesture', RecognizeGesture, self.handle_recognize_gesture)
+        self.service = rospy.Service('recognize_gesture', Trigger, self.handle_recognize_gesture)
         rospy.loginfo("Serviço de reconhecimento de gestos iniciado.")
-        self.timer = rospy.Timer(rospy.Duration(interval), self.process_image)
 
     def image_callback(self, msg):
         self.image = msg
 
-    def process_image(self, event):
-        if self.image is not None and not self.processing:
-            self.processing = True
+    def handle_recognize_gesture(self, req):
+        self.process_image()
+        response = TriggerResponse()
+        response.success = True
+        response.message = str(self.latest_gesture)
+        return response
+
+    def process_image(self):
+        if self.image is not None:
             try:
                 frame = bridge.imgmsg_to_cv2(self.image, desired_encoding='passthrough')
                 frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -54,16 +57,8 @@ class GestureRecognizer:
                 rospy.loginfo(f"Gesto detectado: {gesture}")
             except Exception as e:
                 rospy.logerr(f"Erro ao processar imagem: {e}")
-            finally:
-                self.processing = False
-
-    def handle_recognize_gesture(self, req):
-        if self.latest_gesture is None:
-            rospy.logerr("Nenhum gesto disponível ainda.")
-            return RecognizeGestureResponse(gesture=0)
-        return RecognizeGestureResponse(gesture=self.latest_gesture)
 
 if __name__ == "__main__":
     rospy.init_node('recognize_gesture_server')
-    GestureRecognizer(interval=2.0)  # Ajuste o intervalo conforme necessário
+    GestureRecognizer()
     rospy.spin()
