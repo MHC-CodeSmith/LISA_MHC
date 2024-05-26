@@ -1,27 +1,27 @@
 #include <AccelStepper.h>
 
 // Definições de pinos para o motor da cabeça
-#define STEP_PIN1 14
-#define DIR_PIN1 12
-#define SLEEP_PIN1 27
+#define STEP_PIN1 12
+#define DIR_PIN1 14
+#define SLEEP_PIN1 13
 
 // Definições de pinos para o motor do braço
-#define STEP_PIN2 5
-#define DIR_PIN2 18
-#define SLEEP_PIN2 15 //34 35 DONT
+#define STEP_PIN2 2
+#define DIR_PIN2 4
+#define SLEEP_PIN2 16 //34 35 DONT (1 proibido usar trava serial)
 
-#define STEP_PIN3 19
-#define DIR_PIN3 21
-#define SLEEP_PIN3 32
+#define STEP_PIN3 22
+#define DIR_PIN3 23
+#define SLEEP_PIN3 17
 
 #define STEP_PIN4 26
 #define DIR_PIN4 33
 #define SLEEP_PIN4 25
 
-#define IN41 23
-#define IN42 22
-#define IN43 4
-#define IN44 2
+#define IN41 5
+#define IN42 18
+#define IN43 19
+#define IN44 21
 
 #define LED_BUILTIN 2
 
@@ -72,7 +72,7 @@ void setup() {
   stepper4.setAcceleration(500);
   stepper4.setSpeed(500);
 
-  stepper5.setMaxSpeed(1000);
+  stepper5.setMaxSpeed(2000);
   stepper5.setAcceleration(500);
   stepper5.setSpeed(1000);
 
@@ -84,6 +84,7 @@ void loop() {
   if (currentMillis - lastMillis >= 5000) { // A cada 5 segundos
     lastMillis = currentMillis;
     currentStepper = (currentStepper + 1) % 5; // Alterna entre 0 e 4
+    // currentStepper = 1;
     Serial.print("Switching to stepper: ");
     Serial.println(currentStepper + 1);
 
