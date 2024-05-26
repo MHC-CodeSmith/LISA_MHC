@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import os
+os.environ['GLOG_minloglevel'] = '2'  # Suprimir mensagens de log de inicialização do MediaPipe
 
 import rospy
 from sensor_msgs.msg import Image
@@ -28,6 +30,7 @@ class GestureRecognizer:
     def __init__(self):
         self.image = None
         self.latest_gesture = 0
+        self.gesture_counts = {}
         rospy.Subscriber('/Imagens', Image, self.image_callback)
         self.service = rospy.Service('recognize_gesture', Trigger, self.handle_recognize_gesture)
         rospy.loginfo("Serviço de reconhecimento de gestos iniciado.")
@@ -36,10 +39,7 @@ class GestureRecognizer:
         self.image = msg
 
     def handle_recognize_gesture(self, req):
-        self.process_image()
-        response = TriggerResponse()
-        response.success = True
-        response.message = str(self.latest_gesture)
+        response = self.process_image()
         return response
 
     def process_image(self):
@@ -52,11 +52,29 @@ class GestureRecognizer:
                 gesture = 0
                 if recognition_result.gestures:
                     top_gesture = recognition_result.gestures[0][0]
-                    gesture = gesture_mapping.get(top_gesture.category_name, 0)
-                self.latest_gesture = gesture
+                    gesture_name = top_gesture.category_name
+                    gesture = gesture_mapping.get(gesture_name, 0)
+                    self.update_gesture_count(gesture_name)
+                else:
+                    rospy.loginfo("Nenhum gesto detectado.")
+                
                 rospy.loginfo(f"Gesto detectado: {gesture}")
+                return TriggerResponse(success=True, message=f"Gesto {gesture_name} reconhecido {self.gesture_counts[gesture_name]} vezes" if gesture else "Nenhum gesto reconhecido")
             except Exception as e:
                 rospy.logerr(f"Erro ao processar imagem: {e}")
+                return TriggerResponse(success=False, message=f"Erro ao processar imagem: {e}")
+        else:
+            return TriggerResponse(success=False, message="Nenhuma imagem recebida")
+
+    def update_gesture_count(self, gesture_name):
+        if gesture_name not in self.gesture_counts:
+            self.gesture_counts[gesture_name] = 0
+        self.gesture_counts[gesture_name] += 1
+
+        if self.gesture_counts[gesture_name] >= 5:
+            self.gesture_counts = {}  # Reset counter
+            rospy.set_param('/stop_counting', False)  # Enable finger counting again
+            rospy.loginfo(f"Gesto {gesture_name} reconhecido 5 vezes seguidas")
 
 if __name__ == "__main__":
     rospy.init_node('recognize_gesture_server')
