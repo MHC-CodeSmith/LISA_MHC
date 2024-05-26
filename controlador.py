@@ -21,7 +21,6 @@ class Controlador:
         self.stop_counting = False
         self.gesture_active = False
         self.face_active = False
-        self.gesture_count = 0
         self.rate = rospy.Rate(1)  # 1 Hz
 
     def image_callback(self, msg):
@@ -40,15 +39,13 @@ class Controlador:
                     try:
                         gesture_response = self.recognize_gesture()
                         if gesture_response.success:
-                            self.gesture_count += 1
-                            rospy.loginfo(f"Gesto reconhecido: {gesture_response.message} ({self.gesture_count}/5)")
-                            if self.gesture_count >= 5:
+                            rospy.loginfo(f"Gesto reconhecido: {gesture_response.message}")
+                            if "5 vezes seguidas" in gesture_response.message:
                                 rospy.loginfo("Gesto reconhecido 5 vezes. Reativando contador de dedos.")
+                                self.result_pub.publish(f"Gesto reconhecido: {gesture_response.message}")
                                 self.gesture_active = False
-                                self.gesture_count = 0
                                 self.stop_counting = False
                                 rospy.set_param('/stop_counting', False)
-                                self.result_pub.publish(f"Gesto reconhecido: {gesture_response.message}")
                         else:
                             rospy.loginfo("Nenhum gesto reconhecido ou reconhecimento não concluído.")
                     except rospy.ServiceException as e:
@@ -62,10 +59,10 @@ class Controlador:
                         face_response = self.recognize_face()
                         if face_response.success:
                             rospy.loginfo(f"Rosto reconhecido: {face_response.message}")
+                            self.result_pub.publish(f"Rosto reconhecido: {face_response.message}")
                             self.face_active = False
                             self.stop_counting = False
                             rospy.set_param('/stop_counting', False)
-                            self.result_pub.publish(f"Rosto reconhecido: {face_response.message}")
                         else:
                             rospy.loginfo("Nenhum rosto reconhecido ou reconhecimento não concluído.")
                     except rospy.ServiceException as e:
