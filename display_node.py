@@ -18,8 +18,10 @@ gesture_mapping = {
 
 timeout_duration = rospy.Duration(10)  # Duração do timeout em segundos
 last_message_time = None
+current_process = None
 
 def play_gif_with_mpv(gesture):
+    global current_process
     try:
         # Obter o diretório do script atual e ir para o diretório pai
         current_directory = os.path.dirname(os.path.abspath(__file__))
@@ -39,8 +41,12 @@ def play_gif_with_mpv(gesture):
         # Comando para executar o mpv com um método de saída de vídeo específico
         command = ['mpv', '--fullscreen', '--loop=inf', '--vo=x11', gif_path]
 
+        # Termina o processo anterior, se houver
+        if current_process:
+            current_process.terminate()
+
         # Executa o comando
-        subprocess.run(command)
+        current_process = subprocess.Popen(command)
     except Exception as e:
         rospy.logerr(f"Erro ao tentar exibir o GIF: {e}")
 
@@ -63,10 +69,12 @@ def callback(data):
         rospy.logwarn("Formato da mensagem não reconhecido.")
 
 def check_timeout(event):
-    global last_message_time
+    global last_message_time, current_process
     if last_message_time and (rospy.Time.now() - last_message_time > timeout_duration):
-        rospy.loginfo("Tópico 'resultados' não atualizado por muito tempo. Fechando...")
-        rospy.signal_shutdown("Tópico 'resultados' não atualizado por muito tempo.")
+        rospy.loginfo("Tópico 'resultados' não atualizado por muito tempo. Parando exibição do GIF...")
+        if current_process:
+            current_process.terminate()
+            current_process = None
 
 def listener():
     global last_message_time
