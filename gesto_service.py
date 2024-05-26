@@ -8,8 +8,16 @@ import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from std_srvs.srv import Trigger, TriggerResponse
+import os
+import rospkg
+# Obter o caminho do pacote usando rospkg
+rospack = rospkg.RosPack()
+package_path = rospack.get_path('estrutura')
 
-base_options = python.BaseOptions(model_asset_path='/home/mhc/SEMEAR/lisa/lisa_ws/src/estrutura/gesture_recognizer.task')
+# Construir o caminho relativo para o arquivo do modelo
+model_path = os.path.join(package_path, 'Models', 'gesture_recognizer.task')
+
+base_options = python.BaseOptions(model_asset_path=model_path)
 options = vision.GestureRecognizerOptions(base_options=base_options)
 recognizer = vision.GestureRecognizer.create_from_options(options)
 bridge = CvBridge()
