@@ -15,6 +15,7 @@ class FaceRecognizer:
     def __init__(self):
         self.image = None
         self.latest_face = None
+        self.face_pub = rospy.Publisher('rostos', Image, queue_size=10)
         rospy.Subscriber('/Imagens', Image, self.image_callback)
         self.service = rospy.Service('recognize_face', Trigger, self.handle_recognize_face)
         rospy.loginfo("Serviço de reconhecimento de rosto iniciado.")
@@ -26,9 +27,6 @@ class FaceRecognizer:
         self.process_image()
         response = TriggerResponse()
         response.success = self.latest_face is not None
-        if self.latest_face is not None:
-            cv2.imshow("Rosto Detectado", self.latest_face)
-            cv2.waitKey(1)
         response.message = "Rosto detectado" if self.latest_face is not None else "Nenhum rosto detectado"
         return response
 
@@ -52,6 +50,8 @@ class FaceRecognizer:
                             max_area = area
                             closest_face = frame[bbox[1]:bbox[1] + bbox[3], bbox[0]:bbox[0] + bbox[2]]
                     self.latest_face = closest_face
+                    if self.latest_face is not None:
+                        self.face_pub.publish(bridge.cv2_to_imgmsg(self.latest_face, "bgr8"))
                     rospy.loginfo("Rosto detectado")
                 else:
                     self.latest_face = None
