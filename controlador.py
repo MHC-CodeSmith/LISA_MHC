@@ -1,39 +1,104 @@
 #!/usr/bin/env python3
 
 import rospy
-from std_srvs.srv import Trigger
+from sensor_msgs.msg import Image
+from std_srvs.srv import Trigger, TriggerRequest
 from std_msgs.msg import String
 
 class Controlador:
     def __init__(self):
+        rospy.init_node('controlador_node')
+        rospy.wait_for_service('/get_finger_count')
+        rospy.wait_for_service('/recognize_gesture')
+        rospy.wait_for_service('/recognize_face')
+
+        self.get_finger_count = rospy.ServiceProxy('/get_finger_count', Trigger)
+        self.recognize_gesture = rospy.ServiceProxy('/recognize_gesture', Trigger)
+        self.recognize_face = rospy.ServiceProxy('/recognize_face', Trigger)
+        self.image_sub = rospy.Subscriber('/Imagens', Image, self.image_callback)
         self.result_pub = rospy.Publisher('resultados', String, queue_size=10)
-        rospy.wait_for_service('count_fingers')
-        rospy.wait_for_service('recognize_gesture')
-        rospy.wait_for_service('recognize_face')
-        self.count_fingers_srv = rospy.ServiceProxy('count_fingers', Trigger)
-        self.recognize_gesture_srv = rospy.ServiceProxy('recognize_gesture', Trigger)
-        self.recognize_face_srv = rospy.ServiceProxy('recognize_face', Trigger)
-        rospy.Timer(rospy.Duration(1), self.control_loop)
+        self.current_image = None
+        self.stop_counting = False
+        self.gesture_active = False
+        self.face_active = False
+        self.gesture_count = 0
+        self.rate = rospy.Rate(1)  # 1 Hz
 
-    def control_loop(self, event):
-        try:
-            finger_count_resp = self.count_fingers_srv()
-            if finger_count_resp.success:
-                finger_count = int(finger_count_resp.message)
-                if finger_count == 3:
-                    gesture_resp = self.recognize_gesture_srv()
-                    if gesture_resp.success:
-                        self.result_pub.publish(f"Gesto reconhecido: {gesture_resp.message}")
-                elif finger_count == 4:
-                    face_resp = self.recognize_face_srv()
-                    if face_resp.success:
-                        rospy.loginfo(face_resp.message)
+    def image_callback(self, msg):
+        self.current_image = msg
+
+    def run(self):
+        while not rospy.is_shutdown():
+            if self.current_image is None:
+                rospy.loginfo("Aguardando imagem...")
+                self.rate.sleep()
+                continue
+
+            if self.stop_counting:
+                if self.gesture_active:
+                    rospy.loginfo("Reconhecimento de gestos em andamento...")
+                    try:
+                        gesture_response = self.recognize_gesture()
+                        if gesture_response.success:
+                            self.gesture_count += 1
+                            rospy.loginfo(f"Gesto reconhecido: {gesture_response.message} ({self.gesture_count}/5)")
+                            if self.gesture_count >= 5:
+                                rospy.loginfo("Gesto reconhecido 5 vezes. Reativando contador de dedos.")
+                                self.gesture_active = False
+                                self.gesture_count = 0
+                                self.stop_counting = False
+                                rospy.set_param('/stop_counting', False)
+                                self.result_pub.publish(f"Gesto reconhecido: {gesture_response.message}")
+                        else:
+                            rospy.loginfo("Nenhum gesto reconhecido ou reconhecimento não concluído.")
+                    except rospy.ServiceException as e:
+                        rospy.logerr("Falha ao chamar o serviço: %s", e)
+                    self.rate.sleep()
+                    continue
+                
+                if self.face_active:
+                    rospy.loginfo("Reconhecimento de rostos em andamento...")
+                    try:
+                        face_response = self.recognize_face()
+                        if face_response.success:
+                            rospy.loginfo(f"Rosto reconhecido: {face_response.message}")
+                            self.face_active = False
+                            self.stop_counting = False
+                            rospy.set_param('/stop_counting', False)
+                            self.result_pub.publish(f"Rosto reconhecido: {face_response.message}")
+                        else:
+                            rospy.loginfo("Nenhum rosto reconhecido ou reconhecimento não concluído.")
+                    except rospy.ServiceException as e:
+                        rospy.logerr("Falha ao chamar o serviço: %s", e)
+                    self.rate.sleep()
+                    continue
+
+            try:
+                response = self.get_finger_count()
+                if response.success:
+                    finger_count = int(response.message)
+                    if finger_count == 2:
+                        rospy.loginfo("Contador é 2, ativando serviço de gestos.")
+                        self.gesture_active = True
+                        self.stop_counting = True
+                        rospy.set_param('/stop_counting', True)
+                    elif finger_count == 3:
+                        rospy.loginfo("Contador é 3, ativando serviço de reconhecimento de rostos.")
+                        self.face_active = True
+                        self.stop_counting = True
+                        rospy.set_param('/stop_counting', True)
+                    else:
+                        self.result_pub.publish(f"Numero de dedos: {finger_count}")
                 else:
-                    self.result_pub.publish(f"Numero de dedos: {finger_count}")
-        except rospy.ServiceException as e:
-            rospy.logerr(f"Erro ao chamar serviço: {e}")
+                    rospy.loginfo("Falha ao obter contagem de dedos para comandos.")
+            except rospy.ServiceException as e:
+                rospy.logerr("Falha ao chamar o serviço: %s", e)
+            
+            self.rate.sleep()
 
-if __name__ == "__main__":
-    rospy.init_node('controlador')
-    Controlador()
-    rospy.spin()
+if __name__ == '__main__':
+    try:
+        controlador = Controlador()
+        controlador.run()
+    except rospy.ROSInterruptException:
+        pass
