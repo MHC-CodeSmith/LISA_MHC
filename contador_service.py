@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import os
+os.environ['GLOG_minloglevel'] = '2'  # Suprimir mensagens de log de inicialização do MediaPipe
 
 import rospy
 from sensor_msgs.msg import Image
@@ -11,25 +13,22 @@ bridge = CvBridge()
 mp_hands = mp.solutions.hands
 
 class FingerCounter:
-    def __init__(self):
+    def __init__(self, interval=0.7):
         self.image = None
+        self.processing = False
         self.latest_finger_count = 0
         rospy.Subscriber('/Imagens', Image, self.image_callback)
-        self.service = rospy.Service('count_fingers', Trigger, self.handle_count_fingers)
-        rospy.loginfo("Serviço de contagem de dedos iniciado.")
+        self.timer = rospy.Timer(rospy.Duration(interval), self.process_image)
+        self.service = rospy.Service('/get_finger_count', Trigger, self.handle_get_finger_count)
 
     def image_callback(self, msg):
         self.image = msg
 
-    def handle_count_fingers(self, req):
-        self.process_image()
-        response = TriggerResponse()
-        response.success = True
-        response.message = str(self.latest_finger_count)
-        return response
-
-    def process_image(self):
-        if self.image is not None:
+    def process_image(self, event):
+        if rospy.get_param('/stop_counting', False):  # Verifica se a contagem de dedos deve estar desativada
+            return
+        if self.image is not None and not self.processing:
+            self.processing = True
             try:
                 frame = bridge.imgmsg_to_cv2(self.image, desired_encoding='passthrough')
                 frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -40,6 +39,7 @@ class FingerCounter:
                     if results.multi_hand_landmarks:
                         for hand_landmarks in results.multi_hand_landmarks:
                             hand_landmarks_list = [[lm.x, lm.y] for lm in hand_landmarks.landmark]
+
                             if hand_landmarks_list[8][1] < hand_landmarks_list[6][1]:  # Index finger
                                 finger_count += 1
                             if hand_landmarks_list[12][1] < hand_landmarks_list[10][1]:  # Middle finger
@@ -52,8 +52,13 @@ class FingerCounter:
                 rospy.loginfo(f"Contador de dedos: {finger_count}")
             except Exception as e:
                 rospy.logerr(f"Erro ao processar imagem: {e}")
+            finally:
+                self.processing = False
+
+    def handle_get_finger_count(self, req):
+        return TriggerResponse(success=self.latest_finger_count in [2, 3], message=str(self.latest_finger_count))
 
 if __name__ == "__main__":
-    rospy.init_node('count_fingers_server')
-    FingerCounter()
+    rospy.init_node('Contador_node')
+    FingerCounter(interval=0.7)  # Ajuste o intervalo conforme necessário
     rospy.spin()
