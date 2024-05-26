@@ -17,6 +17,7 @@ class FingerCounter:
         self.image = None
         self.processing = False
         self.latest_finger_count = 0
+        self.finger_count_streak = {}
         rospy.Subscriber('/Imagens', Image, self.image_callback)
         self.timer = rospy.Timer(rospy.Duration(interval), self.process_image)
         self.service = rospy.Service('/get_finger_count', Trigger, self.handle_get_finger_count)
@@ -48,15 +49,33 @@ class FingerCounter:
                                 finger_count += 1
                             if hand_landmarks_list[20][1] < hand_landmarks_list[18][1]:  # Pinky
                                 finger_count += 1
-                self.latest_finger_count = finger_count
+                self.update_finger_count_streak(finger_count)
                 rospy.loginfo(f"Contador de dedos: {finger_count}")
             except Exception as e:
                 rospy.logerr(f"Erro ao processar imagem: {e}")
             finally:
                 self.processing = False
 
+    def update_finger_count_streak(self, finger_count):
+        if finger_count not in self.finger_count_streak:
+            self.finger_count_streak[finger_count] = 0
+        self.finger_count_streak[finger_count] += 1
+
+        # Reset other counts
+        for count in list(self.finger_count_streak):
+            if count != finger_count:
+                self.finger_count_streak[count] = 0
+
+        if self.finger_count_streak[finger_count] >= 3:
+            self.latest_finger_count = finger_count
+        else:
+            self.latest_finger_count = 0
+
     def handle_get_finger_count(self, req):
-        return TriggerResponse(success=self.latest_finger_count in [2, 3], message=str(self.latest_finger_count))
+        if self.latest_finger_count in [2, 3]:
+            return TriggerResponse(success=True, message=str(self.latest_finger_count))
+        else:
+            return TriggerResponse(success=False, message=str(self.latest_finger_count))
 
 if __name__ == "__main__":
     rospy.init_node('Contador_node')
