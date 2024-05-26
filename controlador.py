@@ -16,7 +16,7 @@ class Controlador:
         self.recognize_gesture = rospy.ServiceProxy('/recognize_gesture', Trigger)
         self.recognize_face = rospy.ServiceProxy('/recognize_face', Trigger)
         self.image_sub = rospy.Subscriber('/Imagens', Image, self.image_callback)
-        self.result_pub = rospy.Publisher('resultados', String, queue_size=10)
+        self.result_pub = rospy.Publisher('/resultados', String, queue_size=10)
         self.current_image = None
         self.stop_counting = False
         self.gesture_active = False
