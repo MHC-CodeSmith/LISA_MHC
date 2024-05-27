@@ -318,3 +318,9 @@ source devel/setup.bash
 ```bash
 roslaunch estrutura all_nodes.launch
 ```
+
+## Observações
+
+Para configuração e uso na Raspberry Pi, siga as instruções em:
+[Configuração para Raspberry Pi](link_para_outro_md.md)
+
