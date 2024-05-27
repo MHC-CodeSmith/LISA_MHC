@@ -10,15 +10,16 @@ import re
 gesture_mapping = {
     'Thumb_Up': 'grooving',
     'Thumb_Down': 'angry',
-    'Open_Palm': 'standard',
+    'Open_Palm': 'tropelo',
     'Closed_Fist': 'sleepy',
-    'Victory': 'victory',
-    'Pointing_Up': 'inlove',
+    'Victory': 'inlove',
+    'Pointing_Up': 'victory',
 }
 
 timeout_duration = rospy.Duration(10)  # Duração do timeout em segundos
 last_message_time = None
 current_process = None
+background_process = None
 
 def play_gif_with_mpv(gesture):
     global current_process
@@ -44,11 +45,39 @@ def play_gif_with_mpv(gesture):
         # Termina o processo anterior, se houver
         if current_process:
             current_process.terminate()
+            current_process.wait()  # Espera o término completo do processo
 
         # Executa o comando
         current_process = subprocess.Popen(command)
     except Exception as e:
         rospy.logerr(f"Erro ao tentar exibir o GIF: {e}")
+
+def play_background_gif():
+    global background_process
+    try:
+        # Obter o diretório do script atual e ir para o diretório pai
+        current_directory = os.path.dirname(os.path.abspath(__file__))
+        parent_directory = os.path.dirname(current_directory)
+
+        # Construir o caminho relativo para o arquivo GIF padrão
+        gif_path = os.path.join(parent_directory, 'Images', 'telas', 'animated_standard.gif')
+
+        # Verifica se o arquivo existe
+        if not os.path.exists(gif_path):
+            rospy.logerr(f"O arquivo GIF padrão não foi encontrado: {gif_path}")
+            return
+
+        # Certifique-se de que a variável DISPLAY está configurada para :0
+        os.environ['DISPLAY'] = ':0'
+
+        # Comando para executar o mpv com um método de saída de vídeo específico
+        command = ['mpv', '--fullscreen', '--loop=inf', '--vo=x11', gif_path]
+
+        # Executa o comando apenas se o processo de fundo não estiver em execução
+        if not background_process:
+            background_process = subprocess.Popen(command)
+    except Exception as e:
+        rospy.logerr(f"Erro ao tentar exibir o GIF de fundo: {e}")
 
 def callback(data):
     global last_message_time
@@ -69,12 +98,14 @@ def callback(data):
         rospy.logwarn("Formato da mensagem não reconhecido.")
 
 def check_timeout(event):
-    global last_message_time, current_process
+    global last_message_time, current_process, background_process
     if last_message_time and (rospy.Time.now() - last_message_time > timeout_duration):
-        rospy.loginfo("Tópico 'resultados' não atualizado por muito tempo. Parando exibição do GIF...")
+        rospy.loginfo("Tópico 'resultados' não atualizado por muito tempo. Voltando ao GIF de fundo...")
         if current_process:
             current_process.terminate()
             current_process = None
+        if not background_process:
+            play_background_gif()
 
 def listener():
     global last_message_time
@@ -82,6 +113,7 @@ def listener():
     last_message_time = rospy.Time.now()
     rospy.Subscriber('/resultados', String, callback)
     rospy.Timer(rospy.Duration(1), check_timeout)  # Verifica o timeout a cada segundo
+    play_background_gif()  # Começa com o GIF de fundo
     rospy.spin()
 
 if __name__ == '__main__':
