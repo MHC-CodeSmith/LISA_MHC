@@ -8,8 +8,8 @@ import re
 
 # Mapeamento de gestos para nomes de arquivos GIF
 gesture_mapping = {
-    'Thumbs_Up': 'grooving',
-    'Thumbs_Down': 'angry',
+    'Thumb_Up': 'grooving',
+    'Thumb_Down': 'angry',
     'Open_Palm': 'standard',
     'Closed_Fist': 'sleepy',
     'Victory': 'victory',
