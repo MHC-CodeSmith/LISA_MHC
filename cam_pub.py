@@ -30,7 +30,9 @@ def publish_message():
      
   # Used to convert between ROS and OpenCV images
   br = CvBridge()
- 
+   # Desired resolution
+  desired_width = 320
+  desired_height = 240
   # While ROS is still running.
   while not rospy.is_shutdown():
      
@@ -41,11 +43,14 @@ def publish_message():
          
       if ret == True:
         # Print debugging information to the terminal
-        rospy.loginfo('Publicando video frame')
+        #rospy.loginfo('Publicando video frame')
+        resized_frame = cv2.resize(frame, (desired_width, desired_height))
              
         # Publish the image.
         # The 'cv2_to_imgmsg' method converts an OpenCV
         # image to a ROS image message
+        # cv2.imshow("Imagem Original", frame)
+        # cv2.waitKey(1)
         pub.publish(br.cv2_to_imgmsg(frame))
              
       # Sleep just enough to maintain the desired rate
