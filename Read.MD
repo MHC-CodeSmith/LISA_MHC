@@ -8,17 +8,19 @@ A estrutura de comunicação é baseada em tópicos e nós do ROS, onde diferent
 
 - **Publicadores (Publishers):** Nós que enviam dados, como imagens de vídeo ou informações sensoriais.
 - **Subscritores (Subscribers):** Nós que recebem dados de outros nós para processamento ou ação subsequente.
-- **Servidores (Servers): ** Nós que tem serviços que acionam funções e nós 
-- **Cliente (client): ** Nós que pedem para os serviços funcionarem
+- **Servidores (Servers):** Nós que tem serviços que acionam funções e nós.
+- **Cliente (Client):** Nós que pedem para os serviços funcionarem.
 
 Esses componentes são essenciais para o funcionamento autônomo e a interatividade da Lisa, permitindo que o sistema responda de maneira dinâmica ao ambiente e aos comandos do usuário.
 
 ## Fluxograma da Estrutura
-Incluímos um fluxograma detalhado para ilustrar como os componentes interagem dentro da rede ROS. Para visualizar este fluxograma, navegue até a pasta de imagens neste repositório e abra o arquivo `fluxograma.png`.
+Incluímos um fluxograma detalhado para ilustrar como os componentes interagem dentro da rede ROS. Para visualizar este fluxograma, veja abaixo:
+
+![Fluxograma do Projeto](images/fluxograma.png)
 
 ## Como Usar
 
-### Passo 1: Copiar o Código (crtl-C)
+### Passo 1: Copiar o Código (Ctrl-C)
 
 ```bash
 #!/bin/bash
@@ -72,13 +74,11 @@ catkin_create_pkg estrutura std_msgs rospy roscpp
 cd ~/lisa_ws
 
 cd ~/lisa_ws/src/estrutura
-# mkdir -p src include scripts
 
 cd ~/lisa_ws/src/estrutura/scripts
 git clone --depth 1 https://github.com/MHC-CodeSmith/LISA_MHC.git .
 rm -rf .git
 chmod +x *.py
-
 
 # Atualizar CMakeLists.txt
 echo "Atualizando CMakeLists.txt..."
@@ -101,15 +101,13 @@ include_directories(
 install(PROGRAMS
     scripts/cam_pub.py
     scripts/cam_sub.py
-    scripts/classificar_famoso_rosto_pub-sub.py
-    scripts/contador_pub-sub.py
-    scripts/gestos_pub-sub.py
-    scripts/reconhecer_rostos_pub.py
-    scripts/reconhecer_rostos_pub_messages.py
-    scripts/reconhecer_rostos_sub_message.py
-    scripts/reconhecer_rostos_sub.py
-    scripts/seguir_rosto_pub-sub.py
+    scripts/contador_service.py
+    scripts/controlador.py
+    scripts/display_node.py
+    scripts/gesto_service.py
+    scripts/reconhecimento_rosto_service.py
     scripts/serial_node.py
+    scripts/show_faces.py
     DESTINATION \${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 EOL
