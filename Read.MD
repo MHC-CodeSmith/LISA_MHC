@@ -16,7 +16,7 @@ Esses componentes são essenciais para o funcionamento autônomo e a interativid
 ## Fluxograma da Estrutura
 Incluímos um fluxograma detalhado para ilustrar como os componentes interagem dentro da rede ROS. Para visualizar este fluxograma, veja abaixo:
 
-![Fluxograma do Projeto](images/fluxograma.png)
+![Fluxograma do Projeto](Images/fluxograma.png)
 
 ## Como Usar
 
