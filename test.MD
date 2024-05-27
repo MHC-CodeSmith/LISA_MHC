@@ -91,11 +91,10 @@ Este script implementa o serviço de reconhecimento de gestos utilizando MediaPi
 Este script implementa o serviço de reconhecimento de rostos utilizando MediaPipe.
 
 - **Função `image_callback(msg)`:** Recebe a imagem do tópico `/Imagens`.
-  - **`self.image = msg`:** Armazena a imagem recebida.
-- **Função `handle_recognize_face(req)`:** Processa a imagem e retorna o resultado do reconhecimento de rostos.
+- **Função `handle_recognize_face(req)`:** Processa a imagem e retorna o resultado do reconhecimento de rosto.
   - **`self.process_image()`:** Processa a imagem para detectar rostos.
-  - **`response.success = self.latest_face is not None`:** Define o sucesso do reconhecimento com base na presença de um rosto.
-- **Função `process_image()`:** Processa a imagem para detectar e publicar rostos.
+  - **`response.success = self.latest_face is not None`:** Verifica se um rosto foi detectado.
+- **Função `process_image()`:** Processa a imagem para detectar rostos.
   - **`frame = bridge.imgmsg_to_cv2(self.image, desired_encoding='passthrough')`:** Converte a imagem ROS para OpenCV.
   - **`results = face_detection.process(rgb_frame)`:** Processa a imagem para detectar rostos.
   - **`self.face_pub.publish(bridge.cv2_to_imgmsg(self.latest_face, "bgr8"))`:** Publica a imagem do rosto detectado.
@@ -115,9 +114,23 @@ Este script exibe GIFs baseados nos gestos reconhecidos.
   - **`play_gif_with_mpv(gesture_name)`:** Chama a função para exibir o GIF.
 - **Função `check_timeout(event)`:** Verifica se houve timeout na recepção das mensagens.
   - **`play_background_gif()`:** Exibe um GIF padrão em caso de timeout.
-- **Função `play_background_gif()`:** Exibe um GIF padrão quando não há gestos reconhecidos recentemente.
 
 [Veja o código completo aqui](https://github.com/seu_usuario/seu_repositorio/blob/main/src/estrutura/scripts/display_node.py)
+</details>
+
+<details>
+<summary>controlador.py</summary>
+
+#### controlador.py
+Este script é o cliente principal que aciona diferentes serviços com base nas imagens recebidas.
+
+- **Função `image_callback(msg)`:** Recebe a imagem do tópico `/Imagens`.
+- **Função `run()`:** Executa o loop principal do controlador.
+  - **`response = self.get_finger_count()`:** Solicita a contagem de dedos.
+  - **`gesture_response = self.recognize_gesture()`:** Solicita o reconhecimento de gestos.
+  - **`face_response = self.recognize_face()`:** Solicita o reconhecimento de rostos.
+
+[Veja o código completo aqui](https://github.com/seu_usuario/seu_repositorio/blob/main/src/estrutura/scripts/controlador.py)
 </details>
 
 ## Como Usar
