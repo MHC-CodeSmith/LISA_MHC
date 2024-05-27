@@ -8,10 +8,20 @@ A estrutura de comunicação é baseada em tópicos e nós do ROS, onde diferent
 
 - **Publicadores (Publishers):** Nós que enviam dados, como imagens de vídeo ou informações sensoriais.
 - **Subscritores (Subscribers):** Nós que recebem dados de outros nós para processamento ou ação subsequente.
-- **Servidores (Servers):** Nós que tem serviços que acionam funções e nós.
-- **Cliente (Client):** Nós que pedem para os serviços funcionarem.
+- **Servidores (Servers):** Nós que oferecem serviços que podem ser acionados por outros nós.
+- **Clientes (Clients):** Nós que solicitam a execução de serviços a partir dos servidores.
 
 Esses componentes são essenciais para o funcionamento autônomo e a interatividade da Lisa, permitindo que o sistema responda de maneira dinâmica ao ambiente e aos comandos do usuário.
+
+### Descrição dos Componentes
+- **cam_pub**: Publica imagens capturadas pela câmera no tópico `imagens`.
+- **controlador_client**: Cliente principal que aciona diferentes serviços com base nas imagens recebidas e publica resultados no tópico `resultados`.
+- **gesto_service**: Serviço que reconhece gestos a partir das imagens.
+- **famosos_service**: Serviço que reconhece rostos de pessoas famosas a partir das imagens.
+- **seguir_service**: Serviço que detecta e segue rostos nas imagens.
+- **contador_service**: Serviço que conta o número de dedos mostrados nas imagens.
+- **rostos_service**: Serviço que reconhece rostos genéricos nas imagens.
+- **Serial**: Componente que envia resultados processados para o dispositivo ESP32 via comunicação ROSserial.
 
 ## Fluxograma da Estrutura
 Incluímos um fluxograma detalhado para ilustrar como os componentes interagem dentro da rede ROS. Para visualizar este fluxograma, veja abaixo:
