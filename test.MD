@@ -150,12 +150,17 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
+# Função para verificar se um pacote Python está instalado
+python_package_exists() {
+    pip3 show "$1" >/dev/null 2>&1
+}
+
 # Instalação de dependências do sistema
 echo "Instalando dependências do sistema..."
 sudo apt-get update
-sudo apt-get install -y build-essential cmake git libopencv-dev python3-pip
+sudo apt-get install -y build-essential cmake git libopencv-dev python3-pip mpv
 
-# Instalar ROS Noetic
+# Verificar instalação do ROS Noetic
 if ! command_exists roscore; then
     echo "Instalando ROS Noetic..."
     sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
@@ -176,7 +181,15 @@ fi
 # Instalar dependências Python
 echo "Instalando dependências Python..."
 pip3 install -U rosdep rosinstall_generator wstool rosinstall six vcstools
-pip3 install mediapipe pyserial
+
+# Verificar e instalar pacotes Python necessários
+if ! python_package_exists mediapipe; then
+    pip3 install mediapipe
+fi
+
+if ! python_package_exists pyserial; then
+    pip3 install pyserial
+fi
 
 # Configuração inicial do workspace
 echo "Criando o workspace e o pacote..."
@@ -193,12 +206,11 @@ cd ~/lisa_ws/src
 catkin_create_pkg estrutura std_msgs rospy roscpp
 cd ~/lisa_ws
 
+# Clonar o repositório diretamente no pacote
 cd ~/lisa_ws/src/estrutura
-
-cd ~/lisa_ws/src/estrutura/scripts
 git clone --depth 1 https://github.com/MHC-CodeSmith/LISA_MHC.git .
 rm -rf .git
-chmod +x *.py
+chmod +x scripts/*.py
 
 # Atualizar CMakeLists.txt
 echo "Atualizando CMakeLists.txt..."
@@ -230,6 +242,45 @@ install(PROGRAMS
     scripts/show_faces.py
     DESTINATION \${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+EOL
+
+# Criar package.xml
+echo "Criando package.xml..."
+cat <<EOL > ~/lisa_ws/src/estrutura/package.xml
+<?xml version="1.0"?>
+<package format="2">
+  <name>estrutura</name>
+  <version>0.0.0</version>
+  <description>The Estrutura package</description>
+  <maintainer email="mhc@todo.todo">mhc</maintainer>
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>cv_bridge</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>serial</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_export_depend>cv_bridge</build_export_depend>
+  <build_export_depend>roscpp</build_export_depend>
+  <build_export_depend>rospy</build_export_depend>
+  <build_export_depend>sensor_msgs</build_export_depend>
+  <build_export_depend>std_msgs</build_export_depend>
+  <build_export_depend>serial</build_export_depend>
+  <build_export_depend>message_runtime</build_export_depend>
+  <exec_depend>cv_bridge</exec_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
+  <exec_depend>serial</exec_depend>
+
+  <export>
+  </export>
+</package>
 EOL
 
 # Compilar o workspace
