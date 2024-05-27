@@ -293,17 +293,17 @@ echo "Configuração concluída com sucesso."
 
 ```
 
-### Passo 2: Salvar o Script: Salve o script acima em um arquivo chamado setup_workspace.sh. (crtl-V dentro do nano e depois crtl-O Enter e ctrl-X)
+### Passo 2: Salvar o Script: Salve o script acima em um arquivo chamado setup_workspace.sh. (crtl-shift-V dentro do nano e depois crtl-O Enter e ctrl-X)
 ```bash
 touch setup_workspace.sh && nano setup_workspace.sh
 ```
 
-### Passo 3: Tornar o Script Executável: Torne o script executável.
+### Passo 3: Tornar o Script Executável: 
 ```bash
 chmod +x setup_workspace.sh
 ```
 
-### Passo 4: Executar o Script: Execute o script.
+### Passo 4: Executar o Script: 
 ```bash
 ./setup_workspace.sh
 ```
