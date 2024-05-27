@@ -133,6 +133,11 @@ Este script é o cliente principal que aciona diferentes serviços com base nas 
 [Veja o código completo aqui](https://github.com/seu_usuario/seu_repositorio/blob/main/src/estrutura/scripts/controlador.py)
 </details>
 
+## Fluxograma da Estrutura
+Incluímos um fluxograma detalhado para ilustrar como os componentes interagem dentro da rede ROS. Para visualizar este fluxograma, veja abaixo:
+
+![Fluxograma do Projeto](Images/fluxograma.png)
+
 ## Como Usar
 
 ### Passo 1: Copiar o Código
