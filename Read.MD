@@ -1,13 +1,15 @@
 # Estrutura de ROS para Lisa
 
 ## Visão Geral
-Esta branch contém a implementação da estrutura de comunicação do ROS utilizada no projeto Lisa, focando na interação entre os nós através de publishers, subscribers, services e clients. O código aqui presente estabelece como diferentes componentes do sistema comunicam-se, permitindo um fluxo de dados eficiente e organizado.
+Esta branch contém a implementação da estrutura de comunicação do ROS utilizada no projeto Lisa, focando na interação entre os nós através de publishers, subscribers, services e clients. O código aqui presente estabelece como diferentes componentes do sistema comunicam-se, permitindo um fluxo de dados eficiente e organizado. 
 
 ## Estrutura de Comunicação
-A estrutura de comunicação é baseada em tópicos do ROS, onde diferentes nós publicam e se inscrevem em tópicos específicos para trocar informações. Isso inclui:
+A estrutura de comunicação é baseada em tópicos e nós do ROS, onde diferentes nós publicam e se inscrevem em tópicos específicos para trocar informações, além da utilização de serviços e clientes, onde o cliente principal controla e aciona os serviços. Isso inclui:
 
 - **Publicadores (Publishers):** Nós que enviam dados, como imagens de vídeo ou informações sensoriais.
 - **Subscritores (Subscribers):** Nós que recebem dados de outros nós para processamento ou ação subsequente.
+- **Servidores (Servers): ** Nós que tem serviços que acionam funções e nós 
+- **Cliente (client): ** Nós que pedem para os serviços funcionarem
 
 Esses componentes são essenciais para o funcionamento autônomo e a interatividade da Lisa, permitindo que o sistema responda de maneira dinâmica ao ambiente e aos comandos do usuário.
 
