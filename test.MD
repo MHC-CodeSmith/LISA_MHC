@@ -25,6 +25,7 @@ Este script é responsável por capturar imagens da câmera e publicá-las no t�
   - **`pub = rospy.Publisher('/Imagens', Image, queue_size=10)`:** Inicializa o publisher para o tópico `/Imagens`.
   - **`cap = cv2.VideoCapture(0)`:** Abre a webcam.
   - **`pub.publish(br.cv2_to_imgmsg(frame))`:** Converte a imagem de OpenCV para o formato ROS e publica.
+[Veja o código completo aqui](https://github.com/seu_usuario/seu_repositorio/blob/main/src/estrutura/scripts/cam_pub.py)
 </details>
 
 <details>
@@ -39,6 +40,7 @@ Este script se inscreve no tópico `/Imagens` e exibe os frames de vídeo recebi
   - **`cv2.imshow("camera", current_frame)`:** Exibe o frame de vídeo.
 - **Função `receive_message()`:** Inicializa o nó e se inscreve no tópico `/Imagens`.
   - **`rospy.Subscriber('/Imagens', Image, callback)`:** Se inscreve no tópico e define a função de callback.
+[Veja o código completo aqui](https://github.com/seu_usuario/seu_repositorio/blob/main/src/estrutura/scripts/cam_sub.py)
 </details>
 
 <details>
@@ -53,6 +55,7 @@ Este script implementa o serviço de contagem de dedos utilizando MediaPipe.
   - **`results = hands.process(frame_rgb)`:** Processa a imagem para detectar mãos.
   - **`self.update_finger_count_streak(finger_count)`:** Atualiza a contagem de dedos.
 - **Função `handle_get_finger_count(req)`:** Retorna a contagem de dedos atual.
+[Veja o código completo aqui](https://github.com/seu_usuario/seu_repositorio/blob/main/src/estrutura/scripts/contador_service.py)
 </details>
 
 <details>
@@ -66,6 +69,7 @@ Este script é o cliente principal que aciona diferentes serviços com base nas 
   - **`response = self.get_finger_count()`:** Solicita a contagem de dedos.
   - **`gesture_response = self.recognize_gesture()`:** Solicita o reconhecimento de gestos.
   - **`face_response = self.recognize_face()`:** Solicita o reconhecimento de rostos.
+[Veja o código completo aqui](https://github.com/seu_usuario/seu_repositorio/blob/main/src/estrutura/scripts/controlador.py)
 </details>
 
 <details>
@@ -80,6 +84,7 @@ Este script exibe GIFs baseados nos gestos reconhecidos.
   - **`play_gif_with_mpv(gesture_name)`:** Chama a função para exibir o GIF.
 - **Função `check_timeout(event)`:** Verifica se houve timeout na recepção das mensagens.
   - **`play_background_gif()`:** Exibe um GIF padrão em caso de timeout.
+[Veja o código completo aqui](https://github.com/seu_usuario/seu_repositorio/blob/main/src/estrutura/scripts/display_node.py)
 </details>
 
 ## Como Usar
