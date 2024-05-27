@@ -22,8 +22,8 @@ options = vision.GestureRecognizerOptions(base_options=base_options)
 recognizer = vision.GestureRecognizer.create_from_options(options)
 bridge = CvBridge()
 gesture_mapping = {
-    'Thumbs_Up': 1,
-    'Thumbs_Down': 2,
+    'Thumb_Up': 1,
+    'Thumb_Down': 2,
     'Open_Palm': 3,
     'Closed_Fist': 4,
     'Victory': 5,
