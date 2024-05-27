@@ -200,3 +200,14 @@ chmod +x setup_workspace.sh
 ```bash
 ./setup_workspace.sh
 ```
+
+### Passo 5: Configurar o Ambiente ROS
+```bash
+cd ~/lisa_ws
+source devel/setup.bash
+```
+
+### Passo 6: Executar os Scripts
+```bash
+roslaunch estrutura all_nodes.launch
+```
