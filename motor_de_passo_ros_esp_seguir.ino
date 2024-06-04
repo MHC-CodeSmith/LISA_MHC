@@ -13,22 +13,25 @@ AccelStepper stepper1(AccelStepper::DRIVER, STEP_PIN1, DIR_PIN1);
 
 float distancia_x = 0;
 float distancia_y = 0;
+float have_faces = 0;
 bool shouldRunStepper = false;
 
 void centerXCallback(const std_msgs::Float32& msg) {
   distancia_x = msg.data;
-  Serial.print("Distância X: ");
-  Serial.println(distancia_x);
   
-  if ((distancia_x > 100) || (distancia_x < -100)) {
+  if (distancia_x > 100) {
     digitalWrite(2, HIGH);  // Acende o LED no pino 2
     digitalWrite(SLEEP_PIN1, HIGH);
-    stepper1.setSpeed(500); 
+    stepper1.setSpeed(30);
+    shouldRunStepper = true;  // Permite que o motor rode no loop
+  } else if (distancia_x < -100) {
+    digitalWrite(2, HIGH);  // Acende o LED no pino 2
+    digitalWrite(SLEEP_PIN1, HIGH);
+    stepper1.setSpeed(-30); // Velocidade negativa para inverter o sentido
     shouldRunStepper = true;  // Permite que o motor rode no loop
   } else {
     digitalWrite(2, LOW);   // Apaga o LED no pino 2
     digitalWrite(SLEEP_PIN1, LOW);
-    stepper1.setSpeed(0);   // Para o motor
     shouldRunStepper = false; // Impede que o motor rode no loop
   }
 }
@@ -39,14 +42,28 @@ void centerYCallback(const std_msgs::Float32& msg) {
   Serial.println(distancia_y);
 }
 
+void HaveFacesCallback(const std_msgs::Float32& msg){
+  have_faces = msg.data;
+  if (have_faces == 0){
+    shouldRunStepper = false;
+    digitalWrite(2, LOW);   // Apaga o LED no pino 2
+    digitalWrite(SLEEP_PIN1, LOW);
+    Serial.print("Não tem rosto");
+  }
+  else{
+    Serial.print("Tem rosto");
+  }
+}
+
 ros::Subscriber<std_msgs::Float32> sub_x("/face_center_x", &centerXCallback);
 ros::Subscriber<std_msgs::Float32> sub_y("/face_center_y", &centerYCallback);
-
+ros::Subscriber<std_msgs::Float32> sub_hf("/have_faces", &HaveFacesCallback);
 void setup() {
   nh.getHardware()->setBaud(115200);
   nh.initNode();
   nh.subscribe(sub_x);
   nh.subscribe(sub_y);
+  nh.subscribe(sub_hf);
   
   // Configura os pinos de sono como saída e os define como 1 (desativados)
   pinMode(SLEEP_PIN1, OUTPUT);
@@ -54,7 +71,7 @@ void setup() {
   
   // Configurações iniciais do motor
   stepper1.setMaxSpeed(1000);
-  stepper1.setAcceleration(500);
+  stepper1.setAcceleration(200);
   stepper1.setSpeed(0); // Começa parado
 
   pinMode(2, OUTPUT);  // Configura o pino 2 como saída para controlar o LED
