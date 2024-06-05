@@ -81,7 +81,7 @@ class FingerCounter:
             self.latest_finger_count = 0
 
     def handle_get_finger_count(self, req):
-        if self.latest_finger_count in [2, 3]:
+        if self.latest_finger_count in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
             return TriggerResponse(success=True, message=str(self.latest_finger_count))
         else:
             return TriggerResponse(success=False, message=str(self.latest_finger_count))
