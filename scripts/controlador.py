@@ -40,8 +40,8 @@ class Controlador:
                         gesture_response = self.recognize_gesture()
                         if gesture_response.success:
                             rospy.loginfo(f"Gesto reconhecido: {gesture_response.message}")
-                            if "5 vezes seguidas" in gesture_response.message:
-                                rospy.loginfo("Gesto reconhecido 5 vezes. Reativando contador de dedos.")
+                            if "3 vezes seguidas" in gesture_response.message:
+                                rospy.loginfo("Gesto reconhecido 3 vezes. Reativando contador de dedos.")
                                 self.result_pub.publish(f"Gesto reconhecido: {gesture_response.message}")
                                 self.gesture_active = False
                                 self.stop_counting = False
@@ -85,9 +85,10 @@ class Controlador:
                         self.stop_counting = True
                         rospy.set_param('/stop_counting', True)
                     else:
+                        rospy.loginfo("Outros contador de dedos.")
                         self.result_pub.publish(f"Numero de dedos: {finger_count}")
                 else:
-                    rospy.loginfo("Falha ao obter contagem de dedos para comandos.")
+                    rospy.loginfo("Falha ao obter contagem de dedos.")
             except rospy.ServiceException as e:
                 rospy.logerr("Falha ao chamar o serviço: %s", e)
             
