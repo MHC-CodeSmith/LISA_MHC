@@ -13,7 +13,6 @@ AccelStepper stepper1(AccelStepper::DRIVER, STEP_PIN1, DIR_PIN1);
 
 float distancia_x = 0;
 float distancia_y = 0;
-float have_faces = 0;
 bool shouldRunStepper = false;
 
 void centerXCallback(const std_msgs::Float32& msg) {
@@ -42,28 +41,14 @@ void centerYCallback(const std_msgs::Float32& msg) {
   Serial.println(distancia_y);
 }
 
-void HaveFacesCallback(const std_msgs::Float32& msg){
-  have_faces = msg.data;
-  if (have_faces == 0){
-    shouldRunStepper = false;
-    digitalWrite(2, LOW);   // Apaga o LED no pino 2
-    digitalWrite(SLEEP_PIN1, LOW);
-    Serial.print("Não tem rosto");
-  }
-  else{
-    Serial.print("Tem rosto");
-  }
-}
-
 ros::Subscriber<std_msgs::Float32> sub_x("/face_center_x", &centerXCallback);
 ros::Subscriber<std_msgs::Float32> sub_y("/face_center_y", &centerYCallback);
-ros::Subscriber<std_msgs::Float32> sub_hf("/have_faces", &HaveFacesCallback);
+
 void setup() {
   nh.getHardware()->setBaud(115200);
   nh.initNode();
   nh.subscribe(sub_x);
   nh.subscribe(sub_y);
-  nh.subscribe(sub_hf);
   
   // Configura os pinos de sono como saída e os define como 1 (desativados)
   pinMode(SLEEP_PIN1, OUTPUT);
