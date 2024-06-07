@@ -8,12 +8,12 @@ import re
 
 # Mapeamento de gestos para nomes de arquivos GIF
 gesture_mapping = {
-    'Thumb_Up': 'grooving',
-    'Thumb_Down': 'angry',
-    'Open_Palm': 'tropelo',
-    'Closed_Fist': 'sleepy',
-    'Victory': 'inlove',
-    'Pointing_Up': 'victory',
+    'Thumb_Up': 'FELIZINHA',
+    'Thumb_Down': '(IN)GRATIDAO',
+    'Open_Palm': 'TONTURA',
+    'Closed_Fist': 'TRISTE',
+    'Victory': 'SAPECA',
+    'Pointing_Up': 'UWU',
 }
 
 timeout_duration = rospy.Duration(10)  # Duração do timeout em segundos
@@ -29,7 +29,7 @@ def play_gif_with_mpv(gesture):
         parent_directory = os.path.dirname(current_directory)
 
         # Construir o caminho relativo para o arquivo GIF
-        gif_path = os.path.join(parent_directory, 'Images', 'telas', f'animated_{gesture_mapping[gesture]}.gif')
+        gif_path = os.path.join(parent_directory, 'Images', 'telas', f'LISA - {gesture_mapping[gesture]}.gif')
 
         # Verifica se o arquivo existe
         if not os.path.exists(gif_path):
@@ -60,7 +60,7 @@ def play_background_gif():
         parent_directory = os.path.dirname(current_directory)
 
         # Construir o caminho relativo para o arquivo GIF padrão
-        gif_path = os.path.join(parent_directory, 'Images', 'telas', 'animated_standard.gif')
+        gif_path = os.path.join(parent_directory, 'Images', 'telas', 'LISA - PISCAR SIMPLES.gif')
 
         # Verifica se o arquivo existe
         if not os.path.exists(gif_path):
@@ -87,7 +87,7 @@ def callback(data):
     last_message_time = rospy.Time.now()
 
     # Usar regex para extrair o nome do gesto
-    match = re.search(r'Gesto reconhecido: Gesto (\w+) reconhecido 5 vezes seguidas', data.data)
+    match = re.search(r'Gesto reconhecido: Gesto (\w+) reconhecido 3 vezes seguidas', data.data)
     if match:
         gesture_name = match.group(1)
         if gesture_name in gesture_mapping:
