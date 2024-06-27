@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-import os
-os.environ['GLOG_minloglevel'] = '2'  # Suprimir mensagens de log de inicialização do MediaPipe
 
 import rospy
 from sensor_msgs.msg import Image
@@ -48,8 +46,6 @@ class FingerCounter:
                             else:  # Left hand esta com alguns problemas de saber se é a mão esquerda ou direita
                                 if hand_landmarks_list[4][0] < hand_landmarks_list[3][0] and hand_landmarks_list[4][1] < hand_landmarks_list[2][1]: # Thumb
                                     total_finger_count += 1
-                            # if hand_landmarks_list[4][0] > hand_landmarks_list[3][0] and hand_landmarks_list[4][1] < hand_landmarks_list[2][1]: # Thumb
-                            #     total_finger_count += 1
                             if hand_landmarks_list[8][1] < hand_landmarks_list[6][1]:  # Index finger
                                 total_finger_count += 1
                             if hand_landmarks_list[12][1] < hand_landmarks_list[10][1]:  # Middle finger
