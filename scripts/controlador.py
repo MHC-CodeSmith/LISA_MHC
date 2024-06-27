@@ -29,13 +29,13 @@ class Controlador:
     def run(self):
         while not rospy.is_shutdown():
             if self.current_image is None:
-                rospy.loginfo("Aguardando imagem...")
+                rospy.loginfo("Aguardando imagem")
                 self.rate.sleep()
                 continue
 
             if self.stop_counting:
                 if self.gesture_active:
-                    rospy.loginfo("Reconhecimento de gestos em andamento...")
+                    rospy.loginfo("Reconhecimento de gestos em andamento")
                     try:
                         gesture_response = self.recognize_gesture()
                         if gesture_response.success:
@@ -54,7 +54,7 @@ class Controlador:
                     continue
                 
                 if self.face_active:
-                    rospy.loginfo("Reconhecimento de rostos em andamento...")
+                    rospy.loginfo("Reconhecimento de rostos em andamento")
                     try:
                         face_response = self.recognize_face()
                         if face_response.success:
