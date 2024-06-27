@@ -334,7 +334,4 @@ source devel/setup.bash
 roslaunch estrutura all_nodes.launch
 ```
 
-## Observações
 
-Para configuração e uso na Raspberry Pi, siga as instruções em:
-[Configuração para Raspberry Pi](murilo_vai_fazer_md.md)
