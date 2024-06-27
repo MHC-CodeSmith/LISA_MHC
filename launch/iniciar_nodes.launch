@@ -5,4 +5,5 @@
   <node name="gesto_service" pkg="estrutura" type="gesto_service.py" output="screen" />
   <node name="reconhecimento_rosto_service" pkg="estrutura" type="reconhecimento_rosto_service.py" output="screen" />
   <node name="controlador" pkg="estrutura" type="controlador.py" output="screen" />
+  <node name="seguir_rosto" pkg="estrutura" type="seguir_rosto.py" output="screen" />
 </launch>
