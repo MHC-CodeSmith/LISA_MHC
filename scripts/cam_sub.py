@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
- import rospy 
+import rospy 
 from sensor_msgs.msg import Image 
 from cv_bridge import CvBridge 
 import cv2 
